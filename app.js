@@ -5,7 +5,7 @@ const puppeteer = require('puppeteer');
 
 // Initialize Express app
 const app = express();
-const PORT = 80;
+const PORT = 3000;
 
 // Middleware to parse JSON request bodies
 app.use(express.json());
