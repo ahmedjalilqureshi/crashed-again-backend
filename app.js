@@ -6,11 +6,12 @@ const axios = require('axios');
 const puppeteer = require('puppeteer');
 const path = require("path");
 const connectDB = require("./init/connectDB");
+connectDB();
 const Domain = require("./models/Domain");
 // Initialize Express app
 const app = express();
 const PORT = process.env.PORT;
-connectDB();
+app.use(cors());
 
 // Middleware to parse JSON request bodies
 app.use(express.json());
