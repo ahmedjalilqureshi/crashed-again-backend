@@ -5,6 +5,7 @@ const express = require('express');
 const axios = require('axios');
 const puppeteer = require('puppeteer');
 const path = require("path");
+const cors = require("cors");
 const connectDB = require("./init/connectDB");
 connectDB();
 const Domain = require("./models/Domain");
