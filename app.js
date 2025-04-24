@@ -16,7 +16,7 @@ app.use(cors());
 
 // Middleware to parse JSON request bodies
 app.use(express.json());
-app.use(express.static("cdn"))
+app.use("/cdn", express.static(path.join(__dirname, "cdn")));
 app.get("/website-info", async (req, res) => {
     const { url } = req.query;
   
