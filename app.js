@@ -9,7 +9,7 @@ const connectDB = require("./init/connectDB");
 const Domain = require("./models/Domain");
 // Initialize Express app
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT;
 connectDB();
 
 // Middleware to parse JSON request bodies
