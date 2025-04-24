@@ -63,17 +63,24 @@ app.get("/website-info", async (req, res) => {
       }
   
       // Check the website status
-      const startTime = Date.now();
-      const response = await axios.head(url);
-      const responseTime = Date.now() - startTime;
+      let response,responseTime;
+      try{
+        const startTime = Date.now();
+        response = await axios.head(url);
+        responseTime = Date.now() - startTime;
+      }
+      catch(err)
+      {
+        console.log("resp",err,response);
+      }
 
       // Update the domain details
       const domain = await Domain.findOneAndUpdate(
         { url },
         {
-          status: response.statusText || "unknown",
-          ping: response.status || 0,
-          responseRate: response.headers["request-duration"] || "Fast",
+          status: response?.statusText || "unknown",
+          ping: response?.status || 0,
+          responseRate: response?.headers?.["request-duration"] || responseTime,
           lastUpdate: now,
         },{returnDocument:'after'}
       );
@@ -99,6 +106,7 @@ app.get("/website-info", async (req, res) => {
   
   // Function to capture a snapshot
   async function captureSnapshot(url) {
+    try {
     const browser = await puppeteer.launch({
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
       });
@@ -120,6 +128,11 @@ app.get("/website-info", async (req, res) => {
       return {
         snapshotPath,
       };
+    } catch (error) {
+        return {
+            snapshotPath:null,
+        };
+    }
 }
 // Route to check website status
 app.get('/status', async (req, res) => {
