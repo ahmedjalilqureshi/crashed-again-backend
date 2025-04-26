@@ -18,7 +18,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/cdn", express.static(path.join(__dirname, "cdn")));
 app.get("/website-info", async (req, res) => {
-    const { url } = req.query;
+    const { url,userId } = req.query;
   
     if (!url) {
       return res.status(400).json({ error: "URL parameter is required." });
@@ -84,14 +84,16 @@ app.get("/website-info", async (req, res) => {
           lastUpdate: now,
         },{returnDocument:'after'}
       );
-  
+      if(domain.responseRate == "unknown"){
+        send_notification(userId,"Oops! Website is down","One of your website is down '"+url+"'")
+      }
       res.json({
         url,
         data:domain,
       });
     } catch (error) {
       console.error("Error processing website information:", error);
-  
+      send_notification(userId,"Oops! Website is down","One of your website is down '"+url+"'")
       if (error.response) {
         res.status(error.response.status).json({
           url,
@@ -136,7 +138,7 @@ app.get("/website-info", async (req, res) => {
 }
 // Route to check website status
 app.get('/status', async (req, res) => {
-    const { url } = req.query;
+    const { url,userId } = req.query;
 
     if (!url) {
         return res.status(400).json({ error: 'URL parameter is required.' });
@@ -198,6 +200,43 @@ app.get('/snapshot', async (req, res) => {
     }
 });
 
+const ONE_SIGNAL_APP_ID = process.env.ONESIGNAL_APP_ID ;
+const ONE_SIGNAL_API_KEY = process.env.ONESIGNAL_API_KEY;
+
+const send_notification = async(externalUserId,heading,message) =>{
+  // const { externalUserId, message, heading } = req.body;
+  if (!externalUserId || !message) {
+    return false
+  }
+
+  try {
+    // OneSignal API request payload
+    const payload = {
+      app_id: ONE_SIGNAL_APP_ID,
+      include_external_user_ids: [externalUserId],
+      headings: { en: heading || 'Notification' },
+      contents: { en: message },
+    };
+
+    // Send POST request to OneSignal API
+    const response = await axios.post(
+      'https://onesignal.com/api/v1/notifications',
+      payload,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Basic ${ONE_SIGNAL_API_KEY}`,
+        },
+      }
+    );
+
+    return true
+  } catch (error) {
+    console.error('Error sending notification:', error);
+    return false
+  }
+
+}
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
